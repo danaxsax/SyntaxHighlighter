@@ -11,7 +11,7 @@
     ((and (list? expr) (eq? (car expr) 'char))
      (regexp-quote (string (cadr expr))))
     ((and (list? expr) (eq? (car expr) 'literal))
-     (regexp-quote (cadr expr)))
+     (cadr expr))  ; No escapar literales que ya son regex
     ((and (list? expr) (eq? (car expr) 'concat))
      (apply string-append (map sexp->regex (cdr expr))))
     ((and (list? expr) (eq? (car expr) 'or))
@@ -41,47 +41,73 @@
   (define lenguaje
     (findf (λ (x) (and (list? x) (equal? (second x) nombre))) datos))
   (if lenguaje
-      (map (λ (token)
-             (let ((nombre-token (second token))
-                   (exp (third token)))
-               (cons nombre-token (regexp (sexp->regex exp)))))
-           (cddr lenguaje))
+      ; Crear tokens con orden de prioridad: keywords, operators, strings, comments, numbers, identifiers
+      (let ((tokens (map (λ (token)
+                           (let ((nombre-token (second token))
+                                 (exp (third token)))
+                             (cons nombre-token (regexp (sexp->regex exp)))))
+                         (cddr lenguaje))))
+        (append 
+         (filter (lambda (t) (eq? (car t) 'keyword)) tokens)
+         (filter (lambda (t) (eq? (car t) 'operator)) tokens)  
+         (filter (lambda (t) (eq? (car t) 'literal-string)) tokens)
+         (filter (lambda (t) (eq? (car t) 'comment)) tokens)
+         (filter (lambda (t) (eq? (car t) 'literal-int)) tokens)
+         (filter (lambda (t) (eq? (car t) 'identifier)) tokens)))
       '()))
 
 
 (define (argmin f lst)
   (foldl (λ (x y) (if (< (f x) (f y)) x y)) (car lst) (cdr lst)))
 
+(define (argmax f lst)
+  (foldl (λ (x y) (if (> (f x) (f y)) x y)) (car lst) (cdr lst)))
+
 ;; === Highlighting del archivo ===
 (define (highlight text token-regexes)
-  (define (loop t acc)
-    (cond
-      ((string=? t "") acc)
-      (else
-       (define all-matches
-         (filter identity
-                 (for/list ((rule token-regexes))
-                   (define m (regexp-match-positions (cdr rule) t))
-                   (and m (cons (car rule) m)))))
-
-       (if (null? all-matches)
-           (append acc (list t)) ; ningún match encontrado
-           (let* ((best (argmin (lambda (m) (caar (cdr m))) all-matches)) ; match más cercano
-                  (tag (car best))
-                  (range (cdr best))
-                  (s (caar range))
-                  (e (cdar range)))
-             (if (>= s e) ; prevenir matches vacíos
-                 (loop (substring t 1) (append acc (list (substring t 0 1))))
-                 (let* ((pre (substring t 0 s))
-                        (tok (substring t s e))
-                        (post (substring t e)))
-                   (loop post
-                         (append acc
-                                 (if (string=? pre "")
-                                     (list `(span ((class ,(symbol->string tag))) ,tok))
-                                     (list pre `(span ((class ,(symbol->string tag))) ,tok))))))))))))
-  (loop text '()))
+  (define (tokenize-line line)
+    (define (loop remaining acc)
+      (cond
+        ((string=? remaining "") acc)
+        (else
+         (define matches
+           (filter (lambda (x) x)
+                   (map (lambda (rule)
+                          (let ((m (regexp-match-positions (cdr rule) remaining)))
+                            (if (and m (= (caar m) 0))
+                                (list (car rule) (caar m) (cdar m))
+                                #f)))
+                        token-regexes)))
+         
+         (if (null? matches)
+             ; No hay matches, avanzar un carácter
+             (loop (substring remaining 1) 
+                   (append acc (list (substring remaining 0 1))))
+             ; Tomar el match más largo
+             (let* ((best (argmax (lambda (m) (- (third m) (second m))) matches))
+                    (tag (first best))
+                    (start (second best))
+                    (end (third best))
+                    (token (substring remaining start end))
+                    (rest (substring remaining end)))
+               (loop rest 
+                     (append acc (list `(span ((class ,(symbol->string tag))) ,token)))))))))
+    (loop line '()))
+  
+  ; Procesar línea por línea para manejar comentarios correctamente
+  (define lines (string-split text "\n" #:trim? #f))
+  (define processed-lines
+    (map (lambda (line) 
+           (if (string=? line "")
+               (list "\n")
+               (append (tokenize-line line) (list "\n"))))
+         lines))
+  
+  ; Eliminar el último \n
+  (let ((result (apply append processed-lines)))
+    (if (and (not (null? result)) (string=? (last result) "\n"))
+        (reverse (cdr (reverse result)))
+        result)))
 
 
 
