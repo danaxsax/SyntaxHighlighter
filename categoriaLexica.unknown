@@ -1,0 +1,87 @@
+================================================================================
+CATEGORÍAS LÉXICAS DE LENGUAJES DE PROGRAMACIÓN
+Notación del Punto 2 - Representación Formal
+================================================================================
+
+LENGUAJE: PYTHON
+================================================================================
+
+CATEGORÍA: keyword
+DEFINICIÓN: (or "def" "return" "if" "else" "elif" "while" "for" "in" "import" "as" "class")
+ELEMENTOS: def, return, if, else, elif, while, for, in, import, as, class
+
+CATEGORÍA: identifier  
+DEFINICIÓN: (concat (char-class "a-zA-Z_") (kleene-star (char-class "a-zA-Z0-9_")))
+DESCRIPCIÓN: Identificador que inicia con letra o guión bajo, seguido de cero o más letras, dígitos o guiones bajos
+
+CATEGORÍA: operator
+DEFINICIÓN: (or "+" "-" "*" "/" "==" "!=" "=")
+ELEMENTOS: +, -, *, /, ==, !=, =
+
+CATEGORÍA: literal-string
+DEFINICIÓN: (concat (char "\"") (kleene-star (char-class "^\"")) (char "\""))
+DESCRIPCIÓN: Cadena de texto delimitada por comillas dobles, conteniendo cualquier carácter excepto comillas dobles
+
+CATEGORÍA: literal-int
+DEFINICIÓN: (kleene-plus (char-class "0-9"))
+DESCRIPCIÓN: Secuencia de uno o más dígitos decimales
+
+CATEGORÍA: comment
+DEFINICIÓN: (concat (char "#") (kleene-star (char-class "^\n")))
+DESCRIPCIÓN: Comentario que inicia con # seguido de cualquier carácter excepto nueva línea
+
+
+LENGUAJE: HASKELL
+================================================================================
+
+CATEGORÍA: keyword
+DEFINICIÓN: (or "let" "in" "if" "then" "else" "case" "of" "data" "type" "where")
+ELEMENTOS: let, in, if, then, else, case, of, data, type, where
+
+CATEGORÍA: identifier
+DEFINICIÓN: (concat (char-class "a-zA-Z_") (kleene-star (char-class "a-zA-Z0-9_'")))
+DESCRIPCIÓN: Identificador que inicia con letra o guión bajo, seguido de cero o más letras, dígitos, guiones bajos o apostrofes
+
+CATEGORÍA: operator
+DEFINICIÓN: (or "+" "-" "*" "/" "==" "/=" "=")
+ELEMENTOS: +, -, *, /, ==, /=, =
+
+CATEGORÍA: literal-string
+DEFINICIÓN: (concat (char "\"") (kleene-star (char-class "^\"")) (char "\""))
+DESCRIPCIÓN: Cadena de texto delimitada por comillas dobles, conteniendo cualquier carácter excepto comillas dobles
+
+CATEGORÍA: literal-int
+DEFINICIÓN: (kleene-plus (char-class "0-9"))
+DESCRIPCIÓN: Secuencia de uno o más dígitos decimales
+
+CATEGORÍA: comment
+DEFINICIÓN: (concat (char "-") (char "-") (kleene-star (char-class "^\n")))
+DESCRIPCIÓN: Comentario que inicia con -- seguido de cualquier carácter excepto nueva línea
+
+
+LENGUAJE: RUST
+================================================================================
+
+CATEGORÍA: keyword
+DEFINICIÓN: (or "fn" "let" "mut" "if" "else" "match" "while" "loop" "for" "in" "struct" "enum")
+ELEMENTOS: fn, let, mut, if, else, match, while, loop, for, in, struct, enum
+
+CATEGORÍA: identifier
+DEFINICIÓN: (concat (char-class "a-zA-Z_") (kleene-star (char-class "a-zA-Z0-9_")))
+DESCRIPCIÓN: Identificador que inicia con letra o guión bajo, seguido de cero o más letras, dígitos o guiones bajos
+
+CATEGORÍA: operator
+DEFINICIÓN: (or "+" "-" "*" "/" "==" "!=" "=")
+ELEMENTOS: +, -, *, /, ==, !=, =
+
+CATEGORÍA: literal-string
+DEFINICIÓN: (concat (char "\"") (kleene-star (char-class "^\"")) (char "\""))
+DESCRIPCIÓN: Cadena de texto delimitada por comillas dobles, conteniendo cualquier carácter excepto comillas dobles
+
+CATEGORÍA: literal-int
+DEFINICIÓN: (kleene-plus (char-class "0-9"))
+DESCRIPCIÓN: Secuencia de uno o más dígitos decimales
+
+CATEGORÍA: comment
+DEFINICIÓN: (concat (char "/") (char "/") (kleene-star (char-class "^\n")))
+DESCRIPCIÓN: Comentario que inicia con // seguido de cualquier carácter excepto nueva línea
